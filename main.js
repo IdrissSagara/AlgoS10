@@ -3,19 +3,11 @@ const { all } = require('express/lib/application');
 const airports = require('./jsonDocs/airports.json'); 
 const data = require('./jsonDocs/data.json'); 
 
-const origins = ['BER', 'CDG', 'MRS', 'LYS', 'MAN', 'BIO', 'JFK', 'TUN', 'MXP'];
+const origins = ['TXL', 'CDG', 'MRS', 'LYS', 'MAN', 'BIO', 'JFK', 'TUN', 'MXP'];
 const arrivalTime = new Date('2010-07-30T17:00:00');
 const minArrivalTime = new Date('2010-07-01T00:00:00');
 
-//var flights = [];
-/*
-data.forEach(e => {
-    const time = new Date(e.arrival_time);
-    if (origins.includes(e.origin) && time <= arrivalTime && time >= minArrivalTime) {
-        if(flights.includes())
-        flights[e.origin] = flights[e.origin] || [];
-    }
-});*/
+
 
 function flights(data) {
     return data.reduce((all,curr) => ({...all, [curr.origin]: all[curr.origin] ? [...all[curr.origin], curr]: [curr]}), {});
@@ -34,7 +26,7 @@ function generateSolution(flights) {
     }
     return solution;
 }
-console.log(generateRandomSolution(data));
+//console.log(generateRandomSolution(data));
 
 function randomData(data) {
     var random = [];
@@ -44,32 +36,65 @@ function randomData(data) {
     return random;
 }
 
-function generateRandomSolution(data) {
+//console.log(randomData(generateSolution(flights(data))));
+
+function generateRandomSolution2(data) {
     var random = randomData(data);
-    return generateSolution(flights(random));
+    var solution = [];
+    for(var i = 0; i < 9; i++) {
+        var origin = random[i].origin;
+        var destination = random[i].destination;
+        var time = random[i].arrival_time;
+        var price = random[i].price;
+        solution.push({origin, destination, time, price});
+    }
+    return solution;
 }
 
+//console.log(generateRandomSolution2(data));
 
-function getRandomDepartureFlight( destination,  minArrivalTime,  arrivalTime, data) {
+//console.log(getRandomDepartureFlightSolution('TXL', 'MRS', data));
+
+function getRandomDepartureFlight(destination, minArrivalTime, maxArrivalTime, data) {
     var random = randomData(data);
     var flight = flights(random);
-    var departureFlight = flight[destination].find(e => new Date(e.arrival_time) >= minArrivalTime && new Date(e.arrival_time) <= arrivalTime);
+    var departureFlight = flight[destination].find(e => new Date(e.arrival_time) >= minArrivalTime && new Date(e.arrival_time) <= maxArrivalTime);
     return departureFlight;
 }
 
 function getRandomArrivalFlight(origin, data) {
-    var random = randomData(data);
+    var random = randomData(generateSolution(flights(data)));
     var flight = flights(random);
     var arrivalFlight = flight[origin].find(e => new Date(e.arrival_time) >= arrivalTime);
     return arrivalFlight;
 }
-
-
-function computeCost(solution) {
-    return solution.reduce((all,curr) => all + curr.price, 0);
+function computeArrivalDepartureMinMaxCost(origin, destination, data) {
+    var minCost = Number.MAX_VALUE;
+    var maxCost = 0;
+    var minArrivalTime = new Date('2010-07-01T00:00:00');
+    var maxArrivalTime = new Date('2010-07-30T17:00:00');
+    var minDepartureTime = new Date('2010-07-01T00:00:00');
+    var maxDepartureTime = new Date('2010-07-30T17:00:00');
+    var minArrivalFlight = getRandomArrivalFlight(origin, data);
+    var maxArrivalFlight = getRandomArrivalFlight(origin, data);
+    var minDepartureFlight = getRandomDepartureFlight(destination, minArrivalTime, maxArrivalTime, data);
+    var maxDepartureFlight = getRandomDepartureFlight(destination, minArrivalTime, maxArrivalTime, data);
+    if(minArrivalFlight) {
+        minCost = minArrivalFlight.price;
+        minArrivalTime = new Date(minArrivalFlight.arrival_time);
+    }
+    if(maxArrivalFlight) {
+        maxCost = maxArrivalFlight.price;
+        maxArrivalTime = new Date(maxArrivalFlight.arrival_time);
+    }
+    if(minDepartureFlight) {
+        minCost = minDepartureFlight.price;
+        minDepartureTime = new Date(minDepartureFlight.arrival_time);
+    }
+    if(maxDepartureFlight) {
+        maxCost = maxDepartureFlight.price;
+        maxDepartureTime = new Date(maxDepartureFlight.arrival_time);
+    }
+    return {minCost, maxCost, minArrivalTime, maxArrivalTime, minDepartureTime, maxDepartureTime, minArrivalFlight, maxArrivalFlight, minDepartureFlight, maxDepartureFlight};
 }
-console.log(computeCost(generateRandomSolution(data)));
-
-console.log(getRandomArrivalFlight('SXF', data));
-
-//console.log(getRandomDepartureFlight('MRS', new Date('2010-07-01T00:00:00'), new Date('2010-07-30T17:00:00'), data));
+console.log(computeArrivalDepartureMinMaxCost('JFK', 'TXL', data));
