@@ -95,6 +95,6 @@ function computeArrivalDepartureMinMaxCost(origin, destination, data) {
         maxCost = maxDepartureFlight.price;
         maxDepartureTime = new Date(maxDepartureFlight.arrival_time);
     }
-    return {minCost, maxCost, minArrivalTime, maxArrivalTime, minDepartureTime, maxDepartureTime, minArrivalFlight, maxArrivalFlight, minDepartureFlight, maxDepartureFlight};
+    return {minCost, maxCost, minArrivalFlight, maxArrivalFlight, minDepartureFlight, maxDepartureFlight};
 }
 console.log(computeArrivalDepartureMinMaxCost('JFK', 'TXL', data));
